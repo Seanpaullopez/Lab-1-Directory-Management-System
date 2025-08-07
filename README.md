@@ -1,30 +1,40 @@
 #include <iostream>
 #include <string>
+#include <filesystem> 
 #include <direct.h>   
-#include <windows.h>  
 
 using namespace std;
+namespace fs = std::filesystem;
 
-void listFiles () {
-    string pattern ;
-        cout << "\nEnter file pattern (e.g., *.*, *.txt): ";
-         cin >> pattern;
-   }
-   
-  void mainMenu() {
-    int choice;
-    do {
-        cout << "\n--- Directory Management System ---\n";
-        cout << "[1] List Files\n[2] Create Directory\n[3] Change Directory\n[4] Exit\n";
-        cout << "Choose an option: ";
-        cin >> choice;
+void displayCurrentDirectory() {
+    char buffer[FILENAME_MAX];
+    _getcwd(buffer, FILENAME_MAX);
+    cout << "\nCurrent Directory: " << buffer << endl;
+}
 
-        switch (choice) {
-            case 1: listFiles(); break;
-            case 2: createDirectory(); break;
-            case 3: changeDirectory(); break;
-            case 4: cout << "Exiting program...\n"; break;
-            default: cout << "Invalid choice.\n";
+void listAllFiles() {
+    cout << "\nFiles in current directory:\n";
+    for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+        if (fs::is_regular_file(entry))
+            cout << "- " << entry.path().filename().string() << endl;
+    }
+}
+
+void listFilesByExtension(const string& ext) {
+    cout << "\nFiles with extension " << ext << ":\n";
+    for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+        if (fs::is_regular_file(entry) && entry.path().extension() == ext)
+            cout << "- " << entry.path().filename().string() << endl;
+    }
+}
+
+void listFilesByPattern(const string& pattern) {
+    cout << "\nFiles matching pattern \"" << pattern << "\":\n";
+    for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+        if (fs::is_regular_file(entry)) {
+            string filename = entry.path().filename().string();
+            if (filename.find(pattern) != string::npos)
+                cout << "- " << filename << endl;
         }
-    } while (choice != 4);
+    }
 }
